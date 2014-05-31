@@ -8,7 +8,7 @@ Pipelines to filter out comics we don't want and count the variant covers.
 """
 
 from collections import defaultdict
-from datetime import date
+from time import strptime, strftime
 from re import search
 
 from scrapy.exceptions import DropItem
@@ -36,7 +36,7 @@ class ComicsFilterPipeline(object):
 
         # filtering out comics with no release date
         try:
-            item['cur_date'] = date.strptime(item['cur_date'], '%m/%d/%y')
+            item['cur_date'] = strptime(item['cur_date'], '%m/%d/%y')
         except ValueError:
             raise DropItem("%s has no release date" % item['title'])
 
@@ -46,32 +46,26 @@ class ComicsFilterPipeline(object):
 class InfoWriterPipeline(object):
     
     def __init__(self):
-        self.comicsinfo = defaultdict(int)
+        self.comicsinfo = defaultdict(lambda: defaultdict(int))
 
     def process_item(self, item, spider):
         short_title = search('(?P<comic>^.*\#[\w.]+)(\s|$)', item['title'])
         short_title = short_title.group('comic')
         
-        self.comicsinfo[(short_title, item['cur_date'])] += 1
+        self.comicsinfo[item['cur_date']][short_title] += 1
 
         return item
 
+
     def close_spider(self, spider):
-        output = open('final_data.txt', 'wb')
-
         # sorting by chronological order
-        chronol = sorted(
-            self.comicsinfo.items(),
-            key=lambda x: x[0][1]
-        )
+        with open('final_data.txt', 'wb') as output:
+            for date in sorted(self.comicsinfo.keys()):
+                output.write("{0:s}\n".format(strftime('%d/%m/%y')))
 
-        for (title, date), covers in chronol:
-            output.write(
-                "{0:s}{1:s} ({2:d} covers)\n".format(
-                    title,
-                    date.strftime('%d/%m/%y'),
-                    covers
-                )
-            )
-        output.close()
-        
+                for title, covers in self.comicsinfo[date].iteritems():
+                    output.write(
+                        "\t{0:s} ({1:d} covers)\n".format(title, covers)
+                    )
+
+                output.write("\n")

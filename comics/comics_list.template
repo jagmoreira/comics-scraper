@@ -13,12 +13,8 @@ NOTE: You include the companies of ALL comics you want to parse, otherwise
 the crawler won't be able to find them.
 """
 
-targets = (
-    "Iron Man", "Artifacts", 
-    "Witchblade", "Iron Patriot",
-    "Original Sin", "Avengers"
-)
+targets = ("Iron Man",)
 
-companies = ('marvel-comics','image-comics')
+companies = ('marvel-comics',)
 
 

@@ -8,7 +8,7 @@ spider for the comics data.
 """
 
 import re
-import time
+from time import strptime
 from collections import defaultdict
 from operator import itemgetter
 
@@ -93,7 +93,7 @@ class AutomatedComicsSpider(CrawlSpider):
             for company in companies:
                 if company in link.url:
                     match = re.search("(\d{2}-\d{2}-\d{4})$",link.url)
-                    date = time.strptime(match.group(0), "%m-%d-%Y")
+                    date = strptime(match.group(0), "%m-%d-%Y")
                     temp[company].append((link,date))
         
         new_links = []
