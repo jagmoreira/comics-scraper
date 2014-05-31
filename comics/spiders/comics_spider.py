@@ -99,7 +99,8 @@ class AutomatedComicsSpider(CrawlSpider):
         new_links = []
         for val in temp.itervalues():
             val.sort(key=itemgetter(1))
-            # We want only the Link object of the latest entry
+            # We want only the Link object of the latest entry because that's
+            # the most recent one
             new_links.append(val[-1][0])
 
         return new_links

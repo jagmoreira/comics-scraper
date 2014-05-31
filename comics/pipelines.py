@@ -61,7 +61,7 @@ class InfoWriterPipeline(object):
         # sorting by chronological order
         with open('final_data.txt', 'wb') as output:
             for date in sorted(self.comicsinfo.keys()):
-                output.write("{0:s}\n".format(strftime('%d/%m/%y')))
+                output.write("{0:s}\n".format(strftime('%d/%m/%y', date)))
 
                 for title, covers in self.comicsinfo[date].iteritems():
                     output.write(
