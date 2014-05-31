@@ -1,0 +1,24 @@
+"""
+File: comics_list.template
+Author: Joao Moreira
+Creation Date: Jan 5, 2014
+
+Description:
+Template of parsing input. Replace .template with .py
+
+targets: tuple of comic books to parse
+companies: tuple of comic book companies to include
+
+NOTE: You include the companies of ALL comics you want to parse, otherwise
+the crawler won't be able to find them.
+"""
+
+targets = (
+    "Iron Man", "Artifacts", 
+    "Witchblade", "Iron Patriot",
+    "Original Sin", "Avengers"
+)
+
+companies = ('marvel-comics','image-comics')
+
+

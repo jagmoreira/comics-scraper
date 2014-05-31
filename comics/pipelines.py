@@ -8,7 +8,7 @@ Pipelines to filter out comics we don't want and count the variant covers.
 """
 
 from collections import defaultdict
-from datetime import datetime
+from datetime import date
 from re import search
 
 from scrapy.exceptions import DropItem
@@ -36,7 +36,7 @@ class ComicsFilterPipeline(object):
 
         # filtering out comics with no release date
         try:
-            item['cur_date'] = datetime.strptime(item['cur_date'], '%m/%d/%y')
+            item['cur_date'] = date.strptime(item['cur_date'], '%m/%d/%y')
         except ValueError:
             raise DropItem("%s has no release date" % item['title'])
 
@@ -58,11 +58,20 @@ class InfoWriterPipeline(object):
 
     def close_spider(self, spider):
         output = open('final_data.txt', 'wb')
-        for (title, date), covers in self.comicsinfo.iteritems():
-            output.write("{0:s}: {1:s} ({2:d} covers)\n".format(
+
+        # sorting by chronological order
+        chronol = sorted(
+            self.comicsinfo.items(),
+            key=lambda x: x[0][1]
+        )
+
+        for (title, date), covers in chronol:
+            output.write(
+                "{0:s}{1:s} ({2:d} covers)\n".format(
                     title,
                     date.strftime('%d/%m/%y'),
-                    covers)
+                    covers
                 )
+            )
         output.close()
         
