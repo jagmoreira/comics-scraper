@@ -6,13 +6,12 @@ Creation Date: Jan 5, 2014
 Description:
 Pipelines to filter out comics we don't want and count the variant covers.
 """
-
+import re
 from collections import defaultdict
 from time import strptime, strftime
-from re import search
 
 from scrapy.exceptions import DropItem
-from comics.comics_list import targets
+from comics.comics_list import include, exclude
 
 class ComicsFilterPipeline(object):
     """
@@ -20,17 +19,20 @@ class ComicsFilterPipeline(object):
     Only includes comics whose title partially matches those from the
     {targets} tuple.
     """
-        
+    def __init__(self):
+        self.re_include = re.compile("(" + "|".join(include) + ")+")
+        self.re_exclude = re.compile("(" + "|".join(exclude) + ")+")
+
     def process_item(self, item, spider):
         safe = False
         # Some items have no title
         # If they have a title but not a '#' character they are assumed to
         # be either a HC or a TP
-        if item['title'] and ("#" in item['title']):
-            for i in targets:
-                if i in item['title']:
+        if ('title' in item)  and ("#" in item['title']):
+            if self.re_include.search(item["title"]):
+                if not self.re_exclude.search(item["title"]):
                     safe = True
-                    break
+
         if not safe:
             raise DropItem("%s not in include list." % item['title'])
 
@@ -49,7 +51,7 @@ class InfoWriterPipeline(object):
         self.comicsinfo = defaultdict(lambda: defaultdict(int))
 
     def process_item(self, item, spider):
-        short_title = search('(?P<comic>^.*\#[\w.]+)(\s|$)', item['title'])
+        short_title = re.search('(?P<comic>^.*\#[\w.]+)(\s|$)', item['title'])
         short_title = short_title.group('comic')
         
         self.comicsinfo[item['cur_date']][short_title] += 1

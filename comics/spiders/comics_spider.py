@@ -93,10 +93,7 @@ class AutomatedComicsSpider(CrawlSpider):
             for company in companies:
                 if company in link.url:
                     match = re.search("(\d{2}-\d{2}-\d{4})$",link.url)
-                    if link.url == "http://www.comiclist.com/index.php/lists/marvel-comics-extended-forecast-for-1":
-                        date = strptime("06-18-2014", "%m-%d-%Y")
-                    else:
-                        date = strptime(match.group(0), "%m-%d-%Y")
+                    date = strptime(match.group(0), "%m-%d-%Y")
                     temp[company].append((link,date))
         
         new_links = []
