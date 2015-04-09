@@ -26,7 +26,7 @@ class ComicsSpider(Spider):
     """
     Basic comics spider. Processes a single url
     """
-    
+
     # name of spider. must be unique
     # used from command line: `scrapy crawl [name]`
     name = "comics"
@@ -95,7 +95,7 @@ class AutomatedComicsSpider(CrawlSpider):
                     match = re.search("(\d{2}-\d{2}-\d{4})$",link.url)
                     date = strptime(match.group(0), "%m-%d-%Y")
                     temp[company].append((link,date))
-        
+
         new_links = []
         for val in temp.itervalues():
             val.sort(key=itemgetter(1))
@@ -114,7 +114,7 @@ class AutomatedComicsSpider(CrawlSpider):
         # specific in the table selection.
         # The comics info is a simple <tr> element
         all_comics = sel.xpath('//table[@border="1" and @cellspacing="0" and @cellpadding="3"]//tr[position()>1]')
- 
+
         for comic in all_comics:
             i_loader = ComicsLoader(item=ComicsItem(),
                                         selector=comic,
