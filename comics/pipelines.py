@@ -26,8 +26,8 @@ class ComicsFilterPipeline(object):
     def process_item(self, item, spider):
         safe = False
         # Some items have no title
-        # If they have a title but not a '#' character they are assumed to
-        # be either a HC or a TP
+        # If they have a title but not a '#' character they
+        # are assumed to be either a HC or a TP
         if ('title' in item)  and ("#" in item['title']):
             if self.re_include.search(item["title"]):
                 if not self.re_exclude.search(item["title"]):
@@ -51,7 +51,9 @@ class InfoWriterPipeline(object):
         self.comicsinfo = defaultdict(lambda: defaultdict(int))
 
     def process_item(self, item, spider):
-        short_title = re.search('(?P<comic>^.*\#[\w.]+)(\s|$)', item['title'])
+        short_title = re.search(
+            '(?P<comic>^.*\#[\w/.]+)(\s|$)', item['title']
+        )
         short_title = short_title.group('comic')
 
         self.comicsinfo[item['cur_date']][short_title] += 1

@@ -74,7 +74,7 @@ class AutomatedComicsSpider(CrawlSpider):
     rules = (
         Rule(SgmlLinkExtractor(
                 allow=companies,
-                restrict_xpaths="//h3[@class='bTitle']",
+                restrict_xpaths="//h3",
             ),
             callback='parse_items', follow=True,
             process_links='remove_old_links',
