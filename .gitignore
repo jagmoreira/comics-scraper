@@ -1,0 +1,5 @@
+# file with the results
+final_data\.txt
+
+# actual list of comics to parse
+comics_list.py
