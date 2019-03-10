@@ -2,11 +2,9 @@
 """Spider for comics data."""
 import re
 
-import scrapy
-from scrapy.spiders import CrawlSpider, Rule
-from scrapy.linkextractors import LinkExtractor
+from scrapy.spiders import CrawlSpider
 
-from comics.comics_settings import COMPANIES
+from comics.settings import COMPANIES
 from comics.items import ComicsItem
 from comics.item_loaders import ComicsLoader
 
