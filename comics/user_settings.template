@@ -1,0 +1,23 @@
+"""Template for user-specific settings.
+
+Replace .template with .py
+"""
+
+# Crawl responsibly by identifying yourself (and your website) on the user-agent
+USER_AGENT = '<Your Name> comics scraper'
+
+# Titles to include from all companies.
+# Will include all comics with partial match except those matching the EXCLUDE
+# matches below
+INCLUDE = ('Iron Man', 'Avengers' , 'Batman')
+
+# Comics to exclude (words from included titles)
+# In this case comics like 'Uncanny Avengers' or 'Batman Beyond' will be excluded
+EXCLUDE = ('Uncanny', 'Beyond')
+
+# Comic book companies to include
+# You include the companies of ALL comics you want to parse, otherwise
+# the crawler won't be able to find them.
+COMPANIES = ('marvel-comics', 'dc-comics')
+
+

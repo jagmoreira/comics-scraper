@@ -1,5 +1,5 @@
 # file with the results
-final_data\.txt
+final_data.txt
 
-# actual list of comics to parse
-comics_list.py
+# user-specific settings
+user_settings.py

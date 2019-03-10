@@ -1,124 +1,62 @@
-"""
-File: comics_spider.py
-Author: Joao Moreira
-Creation Date: Jan 5, 2014
-
-Description:
-spider for the comics data.
-"""
-
+# -*- coding: utf-8 -*-
+"""Spider for comics data."""
 import re
-from time import strptime
-from collections import defaultdict
-from operator import itemgetter
 
-from scrapy.spider import Spider
-from scrapy.contrib.spiders import CrawlSpider, Rule
-from scrapy.contrib.linkextractors.sgml import SgmlLinkExtractor
-from scrapy.selector import Selector
-from scrapy.http import Request
+import scrapy
+from scrapy.spiders import CrawlSpider, Rule
+from scrapy.linkextractors import LinkExtractor
+
+from comics.comics_settings import COMPANIES
 from comics.items import ComicsItem
-from comics.itemloaders import ComicsLoader
-from comics.comics_list import companies
+from comics.item_loaders import ComicsLoader
 
+class ComicsSpider(CrawlSpider):
+    """Processes a page containing links to comics from specified companies."""
 
-class ComicsSpider(Spider):
-    """
-    Basic comics spider. Processes a single url
-    """
+    name = 'comics'
 
-    # name of spider. must be unique
-    # used from command line: `scrapy crawl [name]`
-    name = "comics"
+    start_urls = ['http://www.comiclist.com/index.php/lists/ExtendedForecast/']
 
-    allowed_domains = ["comiclist.com"]
+    def __init__(self, *args, **kwargs):
+        super(ComicsSpider, self).__init__(*args, **kwargs)
+        # We want only 1 set of comics from each company, which is assumed to
+        # be the most recent one.
+        self.companies_done = set()
 
-    start_urls = [
-        "http://www.comiclist.com/index.php/lists/marvel-comics-extended-forecast-for-03-26-2014",
-        "http://www.comiclist.com/index.php/lists/image-comics-extended-forecast-for-03-26-2014"
-    ]
 
     def parse(self, response):
-        sel = Selector(response)
+        """Parse a feed with comics from all companies."""
+
+        patt = f"({'|'.join(COMPANIES)})"
+
+        for href in response.css('h3 a::attr(href)').getall():
+            m = re.search(patt, href)
+
+            # Follow links to companies pages if we haven't seen them yet
+            if m and m.group(1) not in self.companies_done:
+                yield response.follow(href, self.parse_company)
+                self.companies_done.add(m.group(1))
+
+        # If we haven't found all companies, go to next page
+        if len(self.companies_done) != len(COMPANIES):
+            for href in response.css('div.posts-pagination a:last-child::attr(href)'):
+                yield response.follow(href, self.parse)
+
+
+    def parse_company(self, response):
+        """Parse a page with individual comics information."""
+
         # The website is not very well formatted, which is why we need to be
         # specific in the table selection.
         # The comics info is a simple <tr> element
-        all_comics = sel.xpath('//table[@border="1" and @cellspacing="0" and @cellpadding="3"]//tr[position()>1]')
+        all_comics = response.xpath(
+            '//table[@border="1" and @cellspacing="0" and @cellpadding="3"]//tr[position()>1]'
+        )
 
         for comic in all_comics:
-            i_loader = ComicsLoader(item=ComicsItem(),
-                                        selector=comic,
-                                        response=response)
-
-            i_loader.add_xpath('title', 'td[3]/a/text() | td[3]/text()')
-            i_loader.add_xpath('cur_date', 'td[1]/text()')
-            i_loader.add_xpath('orig_date', 'td[2]/text()')
-
-            yield i_loader.load_item()
-
-
-class AutomatedComicsSpider(CrawlSpider):
-    """
-    Advanced comics spider. Processes a page containing several links of
-    interest.
-    """
-
-    name = "autocomics"
-
-    allowed_domains = ["comiclist.com"]
-
-    start_urls = [
-        "http://www.comiclist.com/index.php/lists/ExtendedForecast/"
-    ]
-
-    rules = (
-        Rule(SgmlLinkExtractor(
-                allow=companies,
-                restrict_xpaths="//h3",
-            ),
-            callback='parse_items', follow=True,
-            process_links='remove_old_links',
-        ),
-    )
-
-    def remove_old_links(self, all_links):
-        """
-        Filter a list of links for more than one listing for the same company.
-        Keeps the most recent listing.
-        all_links - list of scrapy.link.Link objects
-        """
-
-        temp = defaultdict(list)
-        for link in all_links:
-            for company in companies:
-                if company in link.url:
-                    match = re.search("(\d{2}-\d{2}-\d{4})$",link.url)
-                    date = strptime(match.group(0), "%m-%d-%Y")
-                    temp[company].append((link,date))
-
-        new_links = []
-        for val in temp.itervalues():
-            val.sort(key=itemgetter(1))
-            # We want only the Link object of the latest entry because that's
-            # the most recent one
-            new_links.append(val[-1][0])
-
-        return new_links
-
-    def parse_items(self, response):
-        """
-        Parses a page containing a table with individual comics information
-        """
-        sel = Selector(response)
-        # The website is not very well formatted, which is why we need to be
-        # specific in the table selection.
-        # The comics info is a simple <tr> element
-        all_comics = sel.xpath('//table[@border="1" and @cellspacing="0" and @cellpadding="3"]//tr[position()>1]')
-
-        for comic in all_comics:
-            i_loader = ComicsLoader(item=ComicsItem(),
-                                        selector=comic,
-                                        response=response)
+            i_loader = ComicsLoader(
+                item=ComicsItem(), selector=comic, response=response
+            )
 
             i_loader.add_xpath('title', 'td[3]/a/text() | td[3]/text()')
             i_loader.add_xpath('cur_date', 'td[1]/text()')
