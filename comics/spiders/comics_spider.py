@@ -13,7 +13,7 @@ class ComicsSpider(CrawlSpider):
 
     name = 'comics'
 
-    start_urls = ['http://www.comiclist.com/index.php/lists/ExtendedForecast/']
+    start_urls = ['https://blog.gocollect.com/category/comiclist/extended-forecast/']
 
     def __init__(self, *args, **kwargs):
         super(ComicsSpider, self).__init__(*args, **kwargs)
@@ -27,7 +27,7 @@ class ComicsSpider(CrawlSpider):
 
         patt = f"({'|'.join(COMPANIES)})"
 
-        for href in response.css('h3 a::attr(href)').getall():
+        for href in response.css('h2 a::attr(href)').getall():
             m = re.search(patt, href)
 
             # Follow links to companies pages if we haven't seen them yet
@@ -37,26 +37,23 @@ class ComicsSpider(CrawlSpider):
 
         # If we haven't found all companies, go to next page
         if len(self.companies_done) != len(COMPANIES):
-            for href in response.css('div.posts-pagination a:last-child::attr(href)'):
+            for href in response.css('div.penci-pagination li:last-child a::attr(href)'):
                 yield response.follow(href, self.parse)
 
 
     def parse_company(self, response):
         """Parse a page with individual comics information."""
 
-        # The website is not very well formatted, which is why we need to be
-        # specific in the table selection.
         # The comics info is a simple <tr> element
-        all_comics = response.xpath(
-            '//table[@border="1" and @cellspacing="0" and @cellpadding="3"]//tr[position()>1]'
-        )
+        all_comics = response.css('div#penci-post-entry-inner table tr')
 
-        for comic in all_comics:
+        # First row is the table header
+        for comic in all_comics[1:]:
             i_loader = ComicsLoader(
                 item=ComicsItem(), selector=comic, response=response
             )
 
-            i_loader.add_xpath('title', 'td[3]/a/text() | td[3]/text()')
+            i_loader.add_xpath('title', 'td[3]/text()')
             i_loader.add_xpath('cur_date', 'td[1]/text()')
             i_loader.add_xpath('orig_date', 'td[2]/text()')
 
