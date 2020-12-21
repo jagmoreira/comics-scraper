@@ -1,24 +1,23 @@
 # -*- coding: utf-8 -*-
+"""Pipelines to filter and format scraping output
 
-# Define your item pipelines here
-#
-# Don't forget to add your pipeline to the ITEM_PIPELINES setting
-# See: https://doc.scrapy.org/en/latest/topics/item-pipeline.html
-
+Don't forget to add your pipeline to the ITEM_PIPELINES setting
+See: https://doc.scrapy.org/en/latest/topics/item-pipeline.html
+"""
 import re
 from collections import defaultdict
-from time import strptime, strftime
+from datetime import datetime
 
 from scrapy.exceptions import DropItem
 
 from comics.settings import INCLUDE, EXCLUDE
 
 
-class ComicsFilterPipeline(object):
-    """
-    Filter for unwanted comics.
+class ComicsFilterPipeline:
+    """Filter for unwanted comics.
+
     Only includes comics whose title partially matches those from the
-    {targets} tuple.
+    `user_settings.INCLUDE` tuple.
     """
     def __init__(self):
         self.re_include = re.compile('(' + '|'.join(INCLUDE) + ')+')
@@ -39,15 +38,15 @@ class ComicsFilterPipeline(object):
 
         # filtering out comics with no release date
         try:
-            item['cur_date'] = strptime(item['cur_date'], '%m/%d/%y')
+            item['cur_date'] = datetime.strptime(item['cur_date'], '%m/%d/%y')
         except ValueError:
             raise DropItem('%s has no release date' % item['title'])
 
         return item
 
 
-class InfoWriterPipeline(object):
-
+class InfoWriterPipeline:
+    """Final output formatter."""
     def __init__(self):
         self.comicsinfo = defaultdict(lambda: defaultdict(int))
 
@@ -62,19 +61,20 @@ class InfoWriterPipeline(object):
     def close_spider(self, spider):
         def write_month(output, date):
             output.write('****************\n')
-            output.write(strftime('%B', date) + ':\n')
+            output.write(date.strftime('%B') + ':\n')
 
         # sorting by chronological order
         chrono_dates = sorted(self.comicsinfo.keys())
         with open('final_data.txt', 'w') as output:
             write_month(output, chrono_dates[0])
-            month = chrono_dates[0].tm_mon
+            prev_mon = chrono_dates[0].strftime('%Y/%m')
 
             for date in chrono_dates:
-                if date.tm_mon > month:
+                new_mon = date.strftime('%Y/%m')
+                if new_mon > prev_mon:
                     write_month(output, date)
-                    month = date.tm_mon
-                output.write(f"\t{strftime('%d/%m/%y', date)}\n")
+                    prev_mon = new_mon
+                output.write(f"\t{date.strftime('%m/%d/%Y')}\n")
 
                 for title, covers in self.comicsinfo[date].items():
                     output.write(f'\t-{title} ({covers} covers)\n')

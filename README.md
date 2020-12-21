@@ -42,24 +42,24 @@ Scrapy crawler to get information about upcoming comic book releases using data 
 
         ****************
         March:
-            13/03/19
+            03/13/2019
             -Batman Who Laughs The Grim Knight #1 (3 covers)
             -Avengers No Road Home #1 (1 covers)
             -Avengers No Road Home #5 (2 covers)
             -Tony Stark Iron Man #9 (3 covers)
 
-            20/03/19
+            03/20/2019
             -Batman #67 (2 covers)
             -Avengers #17 (2 covers)
             -Avengers No Road Home #6 (5 covers)
             -West Coast Avengers #9 (1 covers)
 
-            27/03/19
+            03/27/2019
             -Avengers No Road Home #7 (2 covers)
 
         ****************
         April:
-            03/04/19
+            04/03/2019
             -Batman #68 (2 covers)
             -Avengers No Road Home #2 (1 covers)
             -Avengers No Road Home #3 (1 covers)
