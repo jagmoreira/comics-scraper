@@ -47,8 +47,17 @@ class ComicsFilterPipeline:
 
 class InfoWriterPipeline:
     """Final output formatter."""
-    def __init__(self):
+    def __init__(self, count_covers=True):
+        self.count_covers = count_covers
         self.comicsinfo = defaultdict(lambda: defaultdict(int))
+
+    @classmethod
+    def from_crawler(cls, crawler):
+        settings = crawler.settings
+        table = settings.getbool('INFO_WRITER_COUNT_COVERS', True)
+
+        # Instantiate the pipeline with your table
+        return cls(table)
 
     def process_item(self, item, spider):
         short_title = re.search(r'(?P<comic>^.*\#[\w/.]+)(\s|$)', item['title'])
@@ -76,7 +85,11 @@ class InfoWriterPipeline:
                     prev_mon = new_mon
                 output.write(f"\t{date.strftime('%m/%d/%Y')}\n")
 
-                for title, covers in self.comicsinfo[date].items():
-                    output.write(f'\t-{title} ({covers} covers)\n')
+                if self.count_covers:
+                    for title, covers in self.comicsinfo[date].items():
+                        output.write(f'\t-{title} ({covers} covers)\n')
+                else:
+                    for title in self.comicsinfo[date].keys():
+                        output.write(f'\t-{title}\n')
 
                 output.write('\n')
