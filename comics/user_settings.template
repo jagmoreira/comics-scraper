@@ -20,4 +20,5 @@ EXCLUDE = ('Uncanny', 'Beyond')
 # the crawler won't be able to find them.
 COMPANIES = ('marvel-comics', 'dc-comics')
 
-
+# Uncomment to not count comic covers
+# INFO_WRITER_COUNT_COVERS = False
