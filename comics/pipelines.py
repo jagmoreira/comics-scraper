@@ -28,7 +28,7 @@ class ComicsFilterPipeline:
         # Some items have no title
         # If they have a title but not a '#' character they
         # are assumed to be either a HC or a TP
-        if ('title' in item)  and ('#' in item['title']):
+        if ('title' in item)  and ('#' in item['title']) and ('Poster' not in item['title']):
             if self.re_include.search(item['title']):
                 if not self.re_exclude.search(item['title']):
                     safe = True
@@ -74,22 +74,23 @@ class InfoWriterPipeline:
 
         # sorting by chronological order
         chrono_dates = sorted(self.comicsinfo.keys())
-        with open('final_data.txt', 'w') as output:
-            write_month(output, chrono_dates[0])
-            prev_mon = chrono_dates[0].strftime('%Y/%m')
+        if chrono_dates:
+            with open('final_data.txt', 'w') as output:
+                write_month(output, chrono_dates[0])
+                prev_mon = chrono_dates[0].strftime('%Y/%m')
 
-            for date in chrono_dates:
-                new_mon = date.strftime('%Y/%m')
-                if new_mon > prev_mon:
-                    write_month(output, date)
-                    prev_mon = new_mon
-                output.write(f"\t{date.strftime('%m/%d/%Y')}\n")
+                for date in chrono_dates:
+                    new_mon = date.strftime('%Y/%m')
+                    if new_mon > prev_mon:
+                        write_month(output, date)
+                        prev_mon = new_mon
+                    output.write(f"\t{date.strftime('%m/%d/%Y')}\n")
 
-                if self.count_covers:
-                    for title, covers in self.comicsinfo[date].items():
-                        output.write(f'\t-{title} ({covers} covers)\n')
-                else:
-                    for title in self.comicsinfo[date].keys():
-                        output.write(f'\t-{title}\n')
+                    if self.count_covers:
+                        for title, covers in self.comicsinfo[date].items():
+                            output.write(f'\t-{title} ({covers} covers)\n')
+                    else:
+                        for title in self.comicsinfo[date].keys():
+                            output.write(f'\t-{title}\n')
 
-                output.write('\n')
+                    output.write('\n')

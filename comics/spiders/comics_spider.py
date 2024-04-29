@@ -45,7 +45,7 @@ class ComicsSpider(CrawlSpider):
         """Parse a page with individual comics information."""
 
         # The comics info is a simple <tr> element
-        all_comics = response.css('div#penci-post-entry-inner table tr')
+        all_comics = response.css('div.post-content table tr')
 
         # First row is the table header
         for comic in all_comics[1:]:
@@ -53,8 +53,8 @@ class ComicsSpider(CrawlSpider):
                 item=ComicsItem(), selector=comic, response=response
             )
 
-            i_loader.add_xpath('title', 'td[3]/text()')
-            i_loader.add_xpath('cur_date', 'td[1]/text()')
-            i_loader.add_xpath('orig_date', 'td[2]/text()')
+            i_loader.add_xpath('title', 'td[3]/p//text()')
+            i_loader.add_xpath('cur_date', 'td[1]/p/text()')
+            i_loader.add_xpath('orig_date', 'td[2]/p/text()')
 
             yield i_loader.load_item()
