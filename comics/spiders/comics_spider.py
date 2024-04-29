@@ -13,7 +13,7 @@ class ComicsSpider(CrawlSpider):
 
     name = 'comics'
 
-    start_urls = ['https://blog.gocollect.com/category/comiclist/extended-forecast/']
+    start_urls = ['https://gocollect.com/blog/category/comiclist/extended-forecast/']
 
     def __init__(self, *args, **kwargs):
         super(ComicsSpider, self).__init__(*args, **kwargs)
@@ -37,8 +37,10 @@ class ComicsSpider(CrawlSpider):
 
         # If we haven't found all companies, go to next page
         if len(self.companies_done) != len(COMPANIES):
-            for href in response.css('div.penci-pagination li:last-child a::attr(href)'):
-                yield response.follow(href, self.parse)
+            page = 2
+            url = f'{ComicsSpider.start_urls[0]}?page={page}'
+            yield response.follow(url, self.parse)
+            page += 1
 
 
     def parse_company(self, response):
