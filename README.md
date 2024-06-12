@@ -6,7 +6,7 @@ Scrapy crawler to get information about upcoming comic book releases using data 
 
 ## Using the scraper
 
-1. Create a python 3.6+ using pyenv/virtualenv/anaconda/etc.
+1. Create a python 3.10+ using pyenv/virtualenv/anaconda/etc.
 1. Install Scrapy from the `requirements.txt`:
 
         $ pip install -r requirements.txt

@@ -10,8 +10,6 @@ from datetime import datetime
 
 from scrapy.exceptions import DropItem
 
-from comics.settings import INCLUDE, EXCLUDE
-
 
 class ComicsFilterPipeline:
     """Filter for unwanted comics.
@@ -19,9 +17,14 @@ class ComicsFilterPipeline:
     Only includes comics whose title partially matches those from the
     `user_settings.INCLUDE` tuple.
     """
-    def __init__(self):
-        self.re_include = re.compile('(' + '|'.join(INCLUDE) + ')+')
-        self.re_exclude = re.compile('(' + '|'.join(EXCLUDE) + ')+')
+    def __init__(self, include, exclude):
+        self.re_include = re.compile('(' + '|'.join(include) + ')+')
+        self.re_exclude = re.compile('(' + '|'.join(exclude) + ')+')
+
+    @classmethod
+    def from_crawler(cls, crawler):
+        return cls(include=crawler.settings.get('INCLUDE', []),
+                   exclude=crawler.settings.get('EXCLUDE', []))
 
     def process_item(self, item, spider):
         safe = False
