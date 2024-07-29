@@ -28,14 +28,8 @@ class ComicsSpider(scrapy.Spider):
 
         patt = f"({'|'.join(self.settings['COMPANIES'])})"
 
-        # Parse posts in index page
-        for href in response.css('h2.my-2 > a::attr(href)').getall():
-            # Check latest post for links to company pages
-            if 'extended-forecasts' in href and not self.done:
-                yield response.follow(href, self.parse)
-
         # Parse links in latest post
-        for href in response.css('div.post-content > h4 > a::attr(href)').getall():
+        for href in response.css('h2 a::attr(href)').getall():
             m = re.search(patt, href)
 
             # Follow links to companies pages if we haven't seen them yet
@@ -44,7 +38,7 @@ class ComicsSpider(scrapy.Spider):
                 self.companies_done.add(m.group(1))
                 self.done = len(self.companies_done) == len(self.settings['COMPANIES'])
 
-        # If we haven't found all companies, go to next post
+        # If we haven't found all companies, go to next page
         if not self.done and self.curr_page < self.max_page:
             self.curr_page += 1
             next_page = f'{ComicsSpider.start_urls[0]}?page={self.curr_page}'
@@ -54,7 +48,7 @@ class ComicsSpider(scrapy.Spider):
     def parse_company(self, response):
         """Parse a page with individual comics information."""
         # The comics info is a simple <tr> element
-        all_comics = response.css('div.post-body table tr')
+        all_comics = response.css('div.post-content table tr')
 
         # First row is the table header
         for comic in all_comics[1:]:
