@@ -31,7 +31,10 @@ class ComicsFilterPipeline:
         # Some items have no title
         # If they have a title but not a '#' character they
         # are assumed to be either a HC or a TP
-        if ('title' in item)  and ('#' in item['title']) and ('Poster' not in item['title']):
+        if (('title' in item)
+                and ('#' in item['title'])
+                and ('Poster' not in item['title'])
+                and ('Printing Cover' not in item['title'])):
             if self.re_include.search(item['title']):
                 if not self.re_exclude.search(item['title']):
                     safe = True

@@ -12,7 +12,7 @@ class ComicsSpider(scrapy.Spider):
 
     name = 'comics'
 
-    start_urls = ['https://gocollect.com/blog/category/comiclist/extended-forecast/']
+    start_urls = ['https://comiclist.info/categories/extended-forecast/']
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -29,7 +29,7 @@ class ComicsSpider(scrapy.Spider):
         patt = f"({'|'.join(self.settings['COMPANIES'])})"
 
         # Parse links in latest post
-        for href in response.css('h2 a::attr(href)').getall():
+        for href in response.css('h2.post-title.p-name a::attr(href)').getall():
             m = re.search(patt, href)
 
             # Follow links to companies pages if we haven't seen them yet
@@ -41,14 +41,14 @@ class ComicsSpider(scrapy.Spider):
         # If we haven't found all companies, go to next page
         if not self.done and self.curr_page < self.max_page:
             self.curr_page += 1
-            next_page = f'{ComicsSpider.start_urls[0]}?page={self.curr_page}'
+            next_page = f'{ComicsSpider.start_urls[0]}/page/{self.curr_page}'
             yield response.follow(next_page, self.parse)
 
 
     def parse_company(self, response):
         """Parse a page with individual comics information."""
         # The comics info is a simple <tr> element
-        all_comics = response.css('div.post-content table tr')
+        all_comics = response.css('article.post-content table tr')
 
         # First row is the table header
         for comic in all_comics[1:]:
