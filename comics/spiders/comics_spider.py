@@ -55,8 +55,8 @@ class ComicsSpider(scrapy.Spider):
             i_loader = ComicsLoader(
                 item=ComicsItem(), selector=comic, response=response
             )
-
-            i_loader.add_xpath('title', 'td[3]//text()')
+            # Some companies may have intermediate columns
+            i_loader.add_xpath('title', 'td[last()]//text()')
             i_loader.add_xpath('cur_date', 'td[1]/text()')
             i_loader.add_xpath('orig_date', 'td[2]/text()')
 
